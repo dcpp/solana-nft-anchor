@@ -6,11 +6,14 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import {
   findMasterEditionPda,
   findMetadataPda,
+  fetchMetadata,
   mplTokenMetadata,
   MPL_TOKEN_METADATA_PROGRAM_ID,
 } from "@metaplex-foundation/mpl-token-metadata";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
+
+import { expect } from "chai";
 
 import {
   TOKEN_PROGRAM_ID,
@@ -78,5 +81,15 @@ describe("solana-nft-anchor", async () => {
     console.log(
       `minted nft: https://explorer.solana.com/address/${mint.publicKey}?cluster=devnet`
     );
+
+    let metadataAccountPda= findMetadataPda(umi, {
+      mint: publicKey(mint.publicKey),
+    })[0];
+  
+    const meta = await fetchMetadata(umi, metadataAccountPda, { commitment: 'finalized'});
+
+    expect(meta.name).to.be.eq(metadata.name);
+    expect(meta.symbol).to.be.eq(metadata.symbol);
+    expect(meta.uri).to.be.eq(metadata.uri);
   });
 });
